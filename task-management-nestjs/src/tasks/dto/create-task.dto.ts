@@ -1,4 +1,5 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+
 import { TaskCategory } from '../tasks.model';
 
 export class CreateTaskDto {
@@ -9,6 +10,7 @@ export class CreateTaskDto {
   description: string;
 
   @IsNotEmpty()
+  @IsEnum(TaskCategory)
   category: TaskCategory;
 
   @IsNotEmpty()
