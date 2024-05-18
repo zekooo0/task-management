@@ -12,10 +12,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService,
+  ) {}
 
   async signup(
     signUpAuthCredentialsDto: SignUpAuthCredentialsDto,
@@ -43,13 +48,15 @@ export class AuthService {
 
   async signin(
     signInAuthCredentialsDto: SignInAuthCredentialsDto,
-  ): Promise<string> {
+  ): Promise<{ accessToken: string }> {
     const { email, password } = signInAuthCredentialsDto;
     const user = await this.userModel.findOne({ email });
     if (user && (await bcrypt.compare(password, user.password))) {
-      return 'success';
+      const payload: JwtPayload = { email };
+      const accessToken = await this.jwtService.sign(payload);
+      return { accessToken };
     } else {
-      throw new UnauthorizedException('Check You Credintials Again');
+      throw new UnauthorizedException('Check You Credentials Again');
     }
   }
 }

@@ -6,14 +6,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Task } from './task.schema';
 import { Model } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { User } from 'src/auth/user.schema';
 
 @Injectable()
 export class TasksService {
   constructor(@InjectModel(Task.name) private taskModel: Model<Task>) {}
 
-  async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
     const { category, search, status } = filterDto;
-    const query = {};
+    const query = { user };
 
     if (category) {
       query['category'] = category;
@@ -31,15 +32,18 @@ export class TasksService {
     return tasks;
   }
 
-  async getTaskById(id: string): Promise<Task> {
-    const task = await this.taskModel.findById(id);
+  async getTaskById(id: string, user: User): Promise<Task> {
+    const task = await this.taskModel.findOne({ _id: id, user });
     if (!task) {
       throw new NotFoundException();
     }
     return task;
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+  async createTask(
+    createTaskDto: CreateTaskDto,
+    user: User,
+  ): Promise<{ status: string }> {
     const { title, description, category, dueDate } = createTaskDto;
 
     const task = {
@@ -48,21 +52,29 @@ export class TasksService {
       category,
       dueDate,
       status: TaskStatus.OPEN,
+      user,
     };
 
-    const newTask = await this.taskModel.create(task);
-    return newTask;
+    await this.taskModel.create(task);
+    return { status: 'success' };
   }
 
-  async deleteTask(id: string): Promise<void> {
-    const check = await this.taskModel.findByIdAndDelete(id);
+  async deleteTask(id: string, user: User): Promise<void> {
+    const check = await this.taskModel.findOneAndDelete({ _id: id, user });
     if (!check) {
       throw new NotFoundException();
     }
   }
 
-  async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
-    const task = await this.taskModel.findByIdAndUpdate(id, { status });
+  async updateTaskStatus(
+    id: string,
+    status: TaskStatus,
+    user: User,
+  ): Promise<Task> {
+    const task = await this.taskModel.findOneAndUpdate(
+      { _id: id, user },
+      { status },
+    );
     if (!task) {
       throw new NotFoundException();
     }
