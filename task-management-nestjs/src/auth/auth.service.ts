@@ -14,28 +14,34 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
+import { InService } from 'src/in/in.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
+    private inService: InService,
   ) {}
 
   async signup(
     signUpAuthCredentialsDto: SignUpAuthCredentialsDto,
   ): Promise<User> {
-    const { username, password, email, linkedinUrl } = signUpAuthCredentialsDto;
-    const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     try {
+      const { username, password, email, linkedinUrl } =
+        signUpAuthCredentialsDto;
+
+      const salt = await bcrypt.genSalt(12);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
       const user = await this.userModel.create({
         username,
         email,
         password: hashedPassword,
         linkedinUrl,
       });
+      this.inService.scrapeData(linkedinUrl, email);
+
       return user;
     } catch (error) {
       if (error.code === 11000) {
