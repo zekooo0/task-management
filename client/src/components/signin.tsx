@@ -11,18 +11,17 @@ import {
 } from "@/components/ui/form";
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
-import axios from "axios";
+import { login } from "@/app/actions/auth";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// import { useToast } from "@/components/ui/use-toast";
 
 const formSchema: any = z.object({
   email: z.string().email({
@@ -55,9 +54,9 @@ const signin = () => {
         email: values.email,
         password: values.password,
       };
-      const res = await axios.post("http://localhost:3001/auth/signin", data);
-      console.log(res);
-      //   router.push("/");
+      login(data);
+
+      router.push("/");
     } catch (error: any) {
       if (error.response.status !== 200) {
         toast({
@@ -77,7 +76,7 @@ const signin = () => {
   }
 
   return (
-    <div className="flex justify-center lg:justify-around items-center h-screen container">
+    <div className="flex justify-center lg:justify-around items-center py-5 h-screen container">
       <div className="flex-1 max-w-md">
         <h1 className="mb-10 font-bold text-3xl text-center">Sign in</h1>
         <Form {...form}>
