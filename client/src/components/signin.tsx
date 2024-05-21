@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/form";
 
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
@@ -54,25 +53,22 @@ const signin = () => {
         email: values.email,
         password: values.password,
       };
-      login(data);
-
-      router.push("/");
+      const res = await login(data);
+      if (res) {
+        router.push("/");
+      } else throw new Error("error");
     } catch (error: any) {
-      if (error.response.status !== 200) {
-        toast({
-          title: "Error",
-          description: (
-            <p className="shadow-sm mt-2 p-4 rounded-md text-red-800">
-              {JSON.stringify(error.response.data.message, null, 2)}
-            </p>
-          ),
-        });
-      }
-      console.log(error);
+      toast({
+        title: "Error",
+        description: (
+          <p className="shadow-sm mt-2 p-4 rounded-md text-red-400">
+            Unauthorized
+          </p>
+        ),
+      });
     } finally {
       setIsLoading(false);
     }
-    console.log(values);
   }
 
   return (
