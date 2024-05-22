@@ -1,7 +1,19 @@
-import { IsEnum } from 'class-validator';
-import { TaskStatus } from '../tasks.model';
+import { IsEnum, IsString } from 'class-validator';
+import { TaskCategory, TaskStatus } from '../tasks.model';
 
-export class UpdateTaskStatusDto {
+export class UpdateTaskDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsEnum(TaskCategory)
+  category: TaskCategory;
+
   @IsEnum(TaskStatus)
   status: TaskStatus;
+
+  @IsString()
+  dueDate: string;
 }

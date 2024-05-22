@@ -7,6 +7,7 @@ import { Task } from './task.schema';
 import { Model } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { User } from 'src/auth/user.schema';
+import { UpdateTaskDto } from './dto/update-tasks-status.dto';
 
 @Injectable()
 export class TasksService {
@@ -66,14 +67,14 @@ export class TasksService {
     }
   }
 
-  async updateTaskStatus(
+  async updateTask(
     id: string,
-    status: TaskStatus,
+    updateTaskDto: UpdateTaskDto,
     user: User,
   ): Promise<Task> {
     const task = await this.taskModel.findOneAndUpdate(
       { _id: id, user },
-      { status },
+      updateTaskDto,
     );
     if (!task) {
       throw new NotFoundException();

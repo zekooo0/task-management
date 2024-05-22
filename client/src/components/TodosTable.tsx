@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -7,16 +9,37 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// import TabelActionButtons from "./TabelActionButtons";
+import { ITask } from "@/interfaces";
+import { SortAscIcon } from "lucide-react";
+import TabelActionButtons from "./TabelActionButtons";
+import { useState } from "react";
 
-const TodosTable = ({ todos }) => {
+const TodosTable = ({ todos }: { todos: ITask[] }) => {
+  const [sorted, setSorted] = useState(false);
+
+  let sortedTodos = [];
+  if (sorted) {
+    sortedTodos = todos
+      ? [...todos].sort((a, b) => a.category.localeCompare(b.category))
+      : [];
+  } else {
+    sortedTodos = todos
+      ? [...todos].sort((a, b) => b.category.localeCompare(a.category))
+      : [];
+  }
   return (
-    <Table>
+    <Table className="overflow-scroll">
       <TableHeader>
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead>description</TableHead>
-          <TableHead>category</TableHead>
+          <TableHead
+            onClick={() => setSorted((e) => !e)}
+            className="flex items-center space-x-1 hover:cursor-pointer"
+          >
+            <span>category</span>
+            <SortAscIcon />
+          </TableHead>
           <TableHead>status</TableHead>
           <TableHead>dueDate</TableHead>
 
@@ -24,10 +47,12 @@ const TodosTable = ({ todos }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {todos.map((todo) => (
+        {sortedTodos.map((todo) => (
           <TableRow key={todo._id}>
             <TableCell
-              className={`font-medium ${todo.completed ? "line-through" : ""}`}
+              className={`font-medium ${
+                todo.status === "DONE" ? "line-through" : ""
+              }`}
             >
               {todo.title}
             </TableCell>
@@ -37,7 +62,7 @@ const TodosTable = ({ todos }) => {
             <TableCell>{todo.dueDate}</TableCell>
 
             <TableCell className="text-right flex items-center space-x-2 ml-auto w-fit">
-              {/* <TabelActionButtons todo={todo} /> */}
+              <TabelActionButtons todo={todo} />
             </TableCell>
           </TableRow>
         ))}

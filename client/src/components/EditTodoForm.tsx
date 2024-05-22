@@ -27,19 +27,28 @@ import {
 } from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
-import { ITodo } from "../../interfaces";
+import { ITask } from "@/interfaces";
 import { Input } from "@/components/ui/input";
 import { Pen } from "lucide-react";
 import Spinner from "./Spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { formSchema } from "../../schema";
-import { updateTodoAction } from "../../actions/todo.actions";
+import { updateTask } from "@/app/actions/tasks";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const EditTodoForm = ({ todo }: { todo: ITodo }) => {
+const formSchema = z.object({
+  title: z.string().min(1, {
+    message: "title must be at least 1 character.",
+  }),
+  description: z.string(),
+  status: z.enum(["OPEN", "IN_PROGRESS", "DONE"]).default("OPEN"),
+  category: z.enum(["WORK", "PERSONAL", "SHOPPING"]).default("PERSONAL"),
+  dueDate: z.string(),
+});
+
+const EditTodoForm = ({ todo }: { todo: ITask }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -47,20 +56,17 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: todo.title,
-      body: todo.body,
-      priority: todo.priority,
+      description: todo.description,
+      status: todo.status,
+      category: todo.category,
+      dueDate: todo.dueDate,
     },
   });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsPending(true);
-      const { title, body, priority } = values;
-      await updateTodoAction({
-        id: todo.id,
-        title,
-        body: body ?? "",
-        priority,
-      });
+      const res = await updateTask(values, todo._id as string);
     } catch (err) {
       console.log(err);
     } finally {
@@ -81,13 +87,13 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
           <DialogTitle>Edit Todo</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Title" {...field} />
                   </FormControl>
@@ -98,10 +104,10 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
             />
             <FormField
               control={form.control}
-              name="body"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="More Details..." {...field} />
                   </FormControl>
@@ -112,10 +118,10 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
             />
             <FormField
               control={form.control}
-              name="priority"
+              name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Category</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
@@ -126,10 +132,10 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Priority</SelectLabel>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
+                          <SelectLabel>category</SelectLabel>
+                          <SelectItem value="WORK">Work</SelectItem>
+                          <SelectItem value="PERSONAL">Personal</SelectItem>
+                          <SelectItem value="SHOPPING">Shopping</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -139,8 +145,52 @@ const EditTodoForm = ({ todo }: { todo: ITodo }) => {
                 </FormItem>
               )}
             />
-
-            <Button>{isPending ? <Spinner /> : "Edit"}</Button>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="OPEN">Open</SelectItem>
+                          <SelectItem value="IN_PROGRESS">
+                            In Progress
+                          </SelectItem>
+                          <SelectItem value="DONE">Done</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormDescription />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Input placeholder="1900-01-01" {...field} />
+                  </FormControl>
+                  <FormDescription />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button>{isPending ? <Spinner /> : "Edit Todo"}</Button>
           </form>
         </Form>
       </DialogContent>

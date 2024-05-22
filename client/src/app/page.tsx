@@ -9,7 +9,7 @@ export default async function Home() {
     <main className="flex flex-col justify-between min-h-screen container">
       <div>
         <div className="mb-5 ml-auto w-fit">
-          {/* <AddTodoForm userId={userId} /> */}
+          <AddTodoForm />
         </div>
         <TodosTable todos={tasks} />
       </div>

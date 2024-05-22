@@ -33,44 +33,55 @@ import { Plus } from "lucide-react";
 import Spinner from "./Spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { createTodoAction } from "../../actions/todo.actions";
-import { formSchema } from "../../schema";
+import { createTask } from "@/app/actions/tasks";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const AddTodoForm = ({ userId }: { userId: string }) => {
+const formSchema = z.object({
+  title: z.string().min(1, {
+    message: "title must be at least 1 character.",
+  }),
+  description: z.string(),
+  status: z.enum(["OPEN", "IN_PROGRESS", "DONE"]).default("OPEN"),
+  category: z.enum(["WORK", "PERSONAL", "SHOPPING"]).default("PERSONAL"),
+  dueDate: z.string(),
+});
+const AddTodoForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
+
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  const formattedDate = `${year}/${month}/${day}`;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      body: "",
-      priority: "low",
-      completed: false,
+      description: "",
+      status: "OPEN",
+      category: "PERSONAL",
+      dueDate: formattedDate,
     },
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsPending(true);
-      const { title, body, priority, completed } = values;
-      await createTodoAction({
-        title,
-        body: body ?? "",
-        priority,
-        completed: completed ?? false,
-        userId,
-      });
+      const { title, description, status, category, dueDate } = values;
+      await createTask(values);
     } catch (err) {
       console.log(err);
     } finally {
       form.setValue("title", "");
-      form.setValue("body", "");
-      form.setValue("priority", "low");
-      form.setValue("completed", false);
+      form.setValue("description", "");
+      form.setValue("category", "PERSONAL");
+      form.setValue("status", "OPEN");
+      // form.setValue("dueDate", "");
 
       setIsPending(false);
       setIsOpen(false);
@@ -89,13 +100,13 @@ const AddTodoForm = ({ userId }: { userId: string }) => {
           <DialogTitle>Add Todo</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Title" {...field} />
                   </FormControl>
@@ -106,10 +117,10 @@ const AddTodoForm = ({ userId }: { userId: string }) => {
             />
             <FormField
               control={form.control}
-              name="body"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="More Details..." {...field} />
                   </FormControl>
@@ -120,10 +131,10 @@ const AddTodoForm = ({ userId }: { userId: string }) => {
             />
             <FormField
               control={form.control}
-              name="priority"
+              name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Category</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
@@ -134,10 +145,10 @@ const AddTodoForm = ({ userId }: { userId: string }) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Priority</SelectLabel>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
+                          <SelectLabel>category</SelectLabel>
+                          <SelectItem value="WORK">Work</SelectItem>
+                          <SelectItem value="PERSONAL">Personal</SelectItem>
+                          <SelectItem value="SHOPPING">Shopping</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -149,19 +160,43 @@ const AddTodoForm = ({ userId }: { userId: string }) => {
             />
             <FormField
               control={form.control}
-              name="completed"
+              name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel />
+                  <FormLabel>Status</FormLabel>
                   <FormControl>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="completed"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <Label htmlFor="completed">Completed</Label>
-                    </div>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="OPEN">Open</SelectItem>
+                          <SelectItem value="IN_PROGRESS">
+                            In Progress
+                          </SelectItem>
+                          <SelectItem value="DONE">Done</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormDescription />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Input placeholder="1900-01-01" {...field} />
                   </FormControl>
                   <FormDescription />
                   <FormMessage />
