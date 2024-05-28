@@ -11,13 +11,13 @@ export class Task {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
   @Prop()
   status: TaskStatus;
 
-  @Prop({ required: true })
+  @Prop()
   category: TaskCategory;
 
   @Prop()
