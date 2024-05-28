@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 export async function getProfile() {
   try {
     const accessToken = cookies().get("accessToken")?.value;
-    const profile = await axios.get("http://localhost:3001/in/profile", {
+    const profile = await axios.get("https://task-management-sqhb.onrender.com/in/profile", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     revalidatePath("/");

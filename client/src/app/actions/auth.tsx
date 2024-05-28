@@ -5,7 +5,10 @@ import { cookies } from "next/headers";
 
 export async function login(data: { email: string; password: string }) {
   try {
-    const user = await axios.post("http://localhost:3001/auth/signin", data);
+    const user = await axios.post(
+      "https://task-management-sqhb.onrender.com/auth/signin",
+      data
+    );
 
     cookies().set("accessToken", user.data.accessToken);
     return 200;
@@ -21,7 +24,10 @@ export async function signup(data: {
   linkedinUrl: string;
 }) {
   try {
-    const user = await axios.post("http://localhost:3001/auth/signup", data);
+    const user = await axios.post(
+      "https://task-management-sqhb.onrender.com/auth/signup",
+      data
+    );
 
     return 201;
   } catch (err: any) {
