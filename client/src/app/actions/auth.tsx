@@ -13,7 +13,9 @@ export async function login(data: { email: string; password: string }) {
     cookies().set("accessToken", user.data.accessToken);
     return 200;
   } catch (err: any) {
-    return err.response.data.statusCode;
+    console.log(err);
+
+    return err.response.statusText;
   }
 }
 
@@ -31,7 +33,8 @@ export async function signup(data: {
 
     return 201;
   } catch (err: any) {
-    return err.response.data.statusCode;
+    console.log(err);
+    return err.response.statusText;
   }
 }
 
@@ -40,6 +43,8 @@ export async function logout() {
     cookies().delete("accessToken");
     return 200;
   } catch (err: any) {
-    return err;
+    console.log(err);
+
+    return err.response.statusText;
   }
 }

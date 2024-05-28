@@ -40,7 +40,7 @@ export class AuthService {
         password: hashedPassword,
         linkedinUrl,
       });
-      this.inService.scrapeData(linkedinUrl, email);
+      // this.inService.scrapeData(linkedinUrl, email);
 
       return user;
     } catch (error) {

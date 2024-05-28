@@ -64,14 +64,12 @@ const Signup = () => {
       const res = await signup(data);
       if (res === 201) {
         router.push("/signin");
-      } else throw new Error("error");
+      } else throw new Error(res);
     } catch (error: any) {
       toast({
         title: "Error",
         description: (
-          <p className="shadow-sm mt-2 p-4 rounded-md text-red-400">
-            {error.message}
-          </p>
+          <p className="shadow-sm mt-2 p-4 rounded-md text-red-400">{error}</p>
         ),
       });
     } finally {
@@ -144,8 +142,8 @@ const Signup = () => {
             <div className="flex justify-between items-center">
               <small className="block">
                 Already Have Account?{" "}
-                <Link href={"/signn"} className="text-orange-400">
-                  Sign up
+                <Link href={"/signin"} className="text-orange-400">
+                  Sign in
                 </Link>{" "}
               </small>
             </div>
